@@ -1,0 +1,21 @@
+layout {
+    pane size=1 borderless=true {
+        plugin location="tab-bar"
+    }
+    pane split_direction="horizontal" {
+      pane size="70%" {
+        cwd "/tmp/rust_demo/"
+        command "nvim"
+        args "src/main.rs"
+      }
+      pane size="30%" {
+        cwd "/tmp/rust_demo/"
+        command "cargo-watch"
+        args "-x" "run"
+      }
+
+    }
+    pane size=2 borderless=true {
+        plugin location="status-bar"
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "server": {
+        "host": "127.0.0.1:1337",
+        "tls": {
+            "host": "127.0.0.1:443",
+            "enable": false,
+            "key": "key.pem",
+            "cert": "cert.pem"
+        }
+    },
+
+    "routes": {
+        "/index": "index.html",
+        "/de_csharp_a_rust": "de_csharp_a_rust.html",
+        "/ramasse_miettes": "ramasse_miettes.html"
+    },
+
+    "static": {
+        "directory": "assets",
+        "served_from": "/"
+    },
+
+    "config": {
+        "enable_hot_reload": true,
+        "fast_mem_cache": false,
+        "enable_cache_control": false,
+        "enable_directory_listing": true,
+        "minify_html": false,
+        "follow_symlinks": false,
+        "enable_logging": false
+    }
+}

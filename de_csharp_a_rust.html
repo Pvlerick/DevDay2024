@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>De C# à Rust</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+background-color: #5499a8
+
+<img src="td.png" alt="Technical Difficulties" width="600" />
+
+---
+
+class: center, middle
+
+# De C# à Rust
+
+Philippe Vlérick
+<img src="wl.png" alt="Worldline" width="600" />
+
+---
+
+class: center, middle
+
+_Un minimum de slides, un maximum de code_
+
+---
+
+# Agenda
+
+1. Introduction
+2. Les similitudes
+3. Les différences
+
+---
+class: center, middle
+
+# Introduction
+
+---
+
+## Rust, c'est quoi?
+
+- Language de la _famille_ du C
+  - Impératif
+  - Fortement typé
+- Alternative au C et C++
+- Bas et haut niveau
+  - Système
+  - Applicatif
+- Pas de GC, pas de VM
+- Compile en langage machine
+- Inférence forte
+
+---
+
+## Pourquoi du Rust?
+
+- Nouveaux concepts
+- Difficile
+- Performant
+- Adopté par l'industrie
+
+---
+class: center, middle
+
+# Les similitudes
+
+---
+
+## Bases
+
+.left-column[
+C#
+```csharp
+WriteLine("Hello, World!");
+
+WriteLine("Hello, {0}!", "World");
+```
+]
+.right-column[
+Rust
+```rust
+println!("Hello, world!");
+
+println!("Hello, {}!", "world");
+```
+]
+
+---
+## Variables
+
+.left-column[
+C#
+```csharp
+var a = 42;
+int b = 43;
+var c = 44UL;
+```
+]
+.right-column[
+Rust
+```rust
+let a = 42;
+let b: u32 = 43;
+let c = 44u64;
+```
+]
+
+---
+
+## Variables
+
+.left-column[
+C#
+```csharp
+var a = 42;
+a = a + 1;
+```
+]
+.right-column[
+Rust
+```rust
+*let mut a = 42;
+a = a + 1;
+```
+]
+
+---
+
+## Types
+
+- `u`[`8`|`16`|`32`|`64`|`128`] : entier non signé _X_ bits
+- `i`[`8`|`16`|`32`|`64`|`128`] : entier signé _X_ bits
+- [`u`|`i`]`size` : entier de la taille du nombre de bits d'adressage
+  - `nint` & `nuint` en C#
+
+.left-column[
+C#
+```csharp
+var a = 42UL;
+```
+]
+.right-column[
+Rust
+```rust
+let a = 42u64;
+```
+]
+
+---
+
+## Types
+
+.left-column[
+C#
+```csharp
+var s = new StringBuilder();
+s.Append("Hello");
+```
+
+```csharp
+ReadOnlySpan<char> span = "Hello";
+```
+]
+.right-column[
+Rust
+```rust
+let mut s = String::new();
+s.push_str("Hello");
+
+```
+
+```rust
+let slice: &str = "Hello";
+```
+<small>Convention pour les fonction: _snake_case_</small>
+]
+
+---
+
+## Types: _String Slice_
+
+```rust
+let s = String::from("hello world");
+
+let world: &str = &s[6..11];
+```
+
+<img src="str_slice.svg" alt="String slice" width="300" />
+
+---
+
+## Types
+
+.left-column[
+C#
+```csharp
+void
+```
+
+```csharp
+null
+```
+]
+.right-column[
+Rust
+```rust
+()
+```
+
+N/A
+]
+
+---
+
+## Tuples
+
+.left-column[
+C#
+```csharp
+var t = (42, "Hello");
+var (i, s) = t;
+
+WriteLine("{}", t.Item1);
+WriteLine("{}", t.Item2);
+```
+]
+.right-column[
+Rust
+```rust
+let t = (42, "Hello");
+let (i, s) = t;
+
+println!("{}", t.0);
+println!("{}", t.1);
+
+```
+]
+
+---
+
+## `Enum`
+
+
+.left-column[
+C#
+```csharp
+enum E
+{
+  A,
+  B,
+}
+```
+]
+.right-column[
+Rust
+```rust
+enum E {
+  A,
+  B,
+}
+```
+]
+
+---
+
+## `Struct`
+
+.left-column[
+C#
+```csharp
+public struct Foo {
+  String firstName;
+  public String lastName;
+}
+```
+]
+.right-column[
+Rust
+```rust
+pub struct Foo {
+  first_name: String,
+  pub last_name: String,
+}
+```
+<small>Convention pour les _struct_: _PascalCase_.</small></br>
+<small>Convention pour les champs: _snake_case_.</small></br>
+<small>Exposer un champ n'est pas un crime.</small>
+]
+
+---
+
+## `Struct`
+
+.left-column[
+C#
+```csharp
+public struct Foo
+{
+  String bar;
+
+  public String Bar => this.bar;
+}
+```
+]
+.right-column[
+Rust
+```rust
+pub struct Foo {
+  bar: String,
+}
+
+impl Foo {
+  pub fn bar(&self) -> &str {
+*   self.bar.as_str()
+  }
+}
+```
+<small>Le "getter" renvoie une référence.</small></br>
+<small>`return` implicite sans ';'</small>
+]
+
+
+---
+
+## `Struct` - Constructeur
+
+.left-column[
+C#
+```csharp
+public struct Foo
+{
+  String bar;
+
+  public Foo(String bar)
+  {
+    this.bar = bar;
+  }
+}
+```
+]
+.right-column[
+Rust
+```rust
+pub struct Foo {
+  pub bar: String,
+}
+```
+
+```rust
+let f = Foo {
+  bar: "Hello".to_owned(),
+};
+```
+
+```rust
+impl Foo {
+  pub fn new(bar: String) -> Self {
+    Self { bar }
+  }
+}
+```
+<small>Convention pour le constructeur: `new`.</small>
+
+```rust
+let f = Foo::new();
+```
+]
+
+---
+
+## Interfaces
+
+.left-column[
+C#
+```csharp
+interface Bar
+{
+  String GiveMeBar();
+}
+```
+]
+.right-column[
+Rust
+```rust
+trait Bar {
+  fn give_me_bar(&self) -> String;
+}
+```
+]
+
+---
+
+## Génériques
+
+.left-column[
+C#
+```csharp
+static void Print<T>(T bar)
+  where T : IBar
+{
+  WriteLine(bar.GiveMeBar());
+}
+
+```
+]
+.right-column[
+Rust
+```rust
+fn print<T: Bar>(bar: T) {
+  println!("{}", bar.gimme_bar());
+}
+```
+
+```rust
+fn print(bar: impl Bar) {
+  println!("{}", bar.gimme_bar());
+}
+```
+
+```rust
+fn print<T>(bar: T)
+where
+  T: Bar,
+{
+  println!("{}", bar.gimme_bar());
+}
+```
+]
+
+---
+
+## _Pattern Matching_
+
+.left-column[
+C#
+```csharp
+var t = (42, "Hello");
+
+WriteLine(t switch
+{
+  (42, "Hello") => "exact match",
+  (42, _) => ".Item1 matches",
+  (_, "Hello") => ".Item2 matches",
+  _ => "nothing matches",
+});
+```
+]
+.right-column[
+Rust
+```rust
+let t = (42, "Hello");
+
+println!(
+  "{}",
+  match t {
+   "Hello") => "exact match",
+    (42, _) => ".0 matches",
+    (_, "Hello") => ".1 matches",
+    _ => "nothing matches",
+  }
+);
+```
+]
+
+---
+
+## _Discard_
+
+.left-column[
+C#
+```csharp
+_ = GetInt();
+var _ = GetInt();
+```
+]
+.right-column[
+Rust
+```rust
+_ = get_int();
+let _ = get_int();
+```
+]
+
+---
+class: center, middle
+
+# Les différences
+
+---
+
+## Enum
+
+```rust
+enum E {
+  A(String),
+  B(usize),
+  ...
+}
+```
+
+---
+
+## `Option<T>` VS `null`
+
+```rust
+pub enum Option<T> {
+  None,
+  Some(T),
+}
+```
+
+---
+
+## Propagation d'option: `?`
+
+```rust
+let mut v = vec!["5:hello"];
+
+...
+
+fn pop_then_find(mut v: Vec<&str>, c: char) -> Option<usize> {
+    match v.pop() {
+        Some(s) => match s.get(2..) {
+            Some(s) => s.find(c),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+```
+
+---
+
+## `Result<T, E>` VS `Exception`
+
+```rust
+pub enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+```
+
+---
+
+## Propagation d'erreur: `?`
+
+```rust
+fn write_if_exists(path: &str, contents: &[u8]) -> std::io::Result<()> {
+    let path = std::path::PathBuf::from(path);
+    match std::fs::exists(&path) {
+        Ok(true) => match std::fs::write(&path, contents) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(e),
+        },
+        Ok(false) => Ok(()),
+        Err(e) => Err(e),
+    }
+}
+```
+
+---
+
+## `.unwrap()` et `.expect("message")`
+
+```rust
+std::fs::write("/dev/null", "Hello").unwrap();
+std::fs::write("/dev/null", "Hello").expect("should work");
+```
+
+```rust
+let mut v = Vec::<u32>::new();
+let i = v.pop().unwrap();
+let j = v.pop().expect("should work");
+```
+
+---
+
+## ToString
+
+C#
+```csharp
+struct S
+{
+  public override string ToString() => "I'm S";
+}
+...
+WriteLine("{0}", new S());
+```
+
+Rust
+```rust
+?
+```
+
+---
+
+## Traits
+
+- trait étranger sur type local
+- trait local sur type étranger
+
+---
+
+## Surcharges
+
+C#
+```csharp
+static void Connect(IPEndPoint endpoint)
+{
+  //TODO
+}
+
+static void Connect((String, int) endpoint)
+{
+  //TODO
+}
+
+```
+
+Rust
+```rust
+?
+```
+
+---
+
+## _Ownership_ & _Borrowing_ VS _Garbage Collection_
+
+### _Ownership_
+
+- chaque valeur a un et un seul propriétaire
+- si le propriétaire disparaît, la valeur aussi
+
+### _Borrowing_
+
+Référencer sans prendre l'_ownership_
+
+- _&_: utiliser sans modifier (_read-only_)
+- _&mut_: utiliser et modifier (_read-write_)
+
+---
+
+class: center, middle
+
+### _Ownership_ : exemple
+
+---
+
+### _Drop_ VS _IDisposable_
+
+C#
+```csharp
+interface IDisposable {
+  void Dispose();
+}
+```
+
+Rust
+```rust
+pub trait Drop {
+  fn drop(&mut self);
+}
+```
+
+---
+
+class: center, middle
+
+### _Borrowing_ : exemple
+
+---
+
+## _Lifetimes_ VS _Garbage Collection_
+
+- si on peut référencer une valeur, que se passe-t-il quand cette valeur disparaît?
+- introduction du _lifetime_
+
+---
+
+## Resources
+
+- [The Rust Programming Language](https://doc.rust-lang.org/stable/book/)
+- [Rust for C#/.NET Developers](https://microsoft.github.io/rust-for-dotnet-devs/latest/)
+- [Rustlings](https://github.com/rust-lang/rustlings)
+- [Exercism](https://exercism.org/)
+- [CodeCrafters](https://codecrafters.io/)
+
+https://openfeedback.io/dd2024/2024-11-07/749437
+
+<img src="feedback_rust.png" alt="Retour" width="200" />
+
+    </textarea>
+    <script src="remark-latest.min.js"></script>
+    <script>
+      var slideshow = remark.create({highlightLines: true});
+    </script>
+  </body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Comment fonctionne le "Garbage Collector"</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+background-color: #5499a8
+
+<img src="td.png" alt="Technical Difficulties" width="600" />
+
+---
+
+class: center, middle
+
+# Comment fonctionne le "Garbage Collector" 
+## ou _ramasse-miettes_
+
+Philippe Vlérick
+<img src="wl.png" alt="Worldline" width="600" />
+
+---
+
+# Agenda
+
+1. Le problème
+2. Définition & objectifs
+3. Comment
+4. Optimisations & variations
+
+---
+class: center, middle
+
+# Le problème
+
+---
+
+## Besoin variable de mémoire
+
+> Un programme sait rarement de quelle quantité de mémoire il aura besoin
+
+---
+
+## Emprunt et restitution de mémoire
+
+- `malloc` : obtenir une certaine quantité de mémoire
+- `free` : restituer de la mémoire
+
+<small>La mémoire, comme tout le reste, est une resource limitée...</small>
+
+---
+
+## Problèmes
+
+- Oubli de réstitution
+- Lecture dans une zone qui a été réstituée
+- Double restitution
+
+Empiriquement, la majorité d'entre nous fait ca très mal.
+
+---
+
+class: center, middle
+
+# Définition & objectifs
+
+---
+
+## "Garbage Collection"
+### _ramassage des miettes_
+
+> Récuperation automatique de l'espace de stockage qui n'est plus utilisés
+
+<small>Première implémentation: Lisp en 1958.</small>
+
+---
+
+## Objectif connexe
+
+- Automatisation de la gestion de la mémoire
+
+---
+
+## Parenthèse: "Type Safety" 
+### _Sûreté du typage_
+
+- identifier le type et donc sa taille
+- les références pointent sur le début des objets
+- toutes les références ont la même taille
+
+<small>C et C++ peuvent manipuler les adresses arbitrairement; en programme peut donc en théorie, à tout moment, accèder à n'importe quelle localisation mémoire.</small>
+---
+
+class: center, middle
+
+# Comment
+
+---
+
+## Solution la plus courante: _Mark & Sweep_
+
+- Le programme est mis en pause
+- _Mark_: marquer les objets qui sont accessibles
+- _Sweep_: recuperer tout ce qui n'est pas marqué
+
+---
+
+## Déterminer ce qui est n'est pas une "miette"
+### "ce qui pourrait être utilisé dans le futur"
+
+1. Tout ce qui est accessible initialement est le groupe racine (_root set_)
+2. Tous ces objet sont marqués comme accessibles
+3. Lister les références contenues dans ces objets
+4. GOTO 2
+5. Tout ce qui n'est pas marqué est réclamé
+
+---
+
+class: center, middle
+
+<img src="mark-sweep.png" alt="Mark & Sweep" width="800" />
+
+<small>Licenced under [Creative Commons](https://creativecommons.org/licenses/by-nc-nd/4.0/) by [Bob Nystrom](https://github.com/munificent) for his book [Crafting Interpreters](https://www.craftinginterpreters.com/).</small>
+
+---
+
+## Parenthèse: Performances
+
+- Interruptions du programme
+- Temps d'exécution du ramassage
+
+---
+
+## À quel moment?
+
+- quand il n'y a plus de place
+- périodiquement
+  - paramètrable
+- évènements spécifiques
+  - OS n'a plus beaucoup de mémoire
+  - CLR AppDomain unload
+  - CLR shutdown
+- à la demande
+  - programmatiquement - généralement découragé
+
+---
+
+## Parenthèse: CLR & _Finalizer_
+
+- une référence de l'objet est mis dans une liste spéciale lors de la création
+- quand l'objet devient une "miette", il est mis dans une seconde liste au lieu d'être réclamé
+- un _thread_ spécial s'occupe d'appeler le _finalize_ des objets dans cette liste
+- l'espace sera reclamé lors du ramassage suivant
+
+---
+
+
+class: center, middle
+
+# Optimisations & variations
+
+---
+
+## Compaction
+
+Raisonnement: regrouper l'espace utilisé
+
+<img src="compaction.png" alt="Compaction" width="750" />
+
+Il faut alors décaler les références dans les objets
+
+---
+
+## Générations
+
+Raisonnement: les objets ont une durée de vie très courte ou très longue
+
+- les objets qui "survivent" à une collecte sont promu à une génération suppérieure
+- les génération suppérieures sont inspectées moins fréquement
+
+<img src="generations.png" alt="Generations" width="750" />
+
+---
+
+## Gros objets - CLR
+### _Large Objects Heap_
+
+- 85000 octets ou plus
+- pas de compaction
+- imédiatement en Gen 2
+
+---
+
+## Autres
+
+- Parallèlisme
+  - s'execute sur plusieurs _threads_
+- Concurrence
+  - s'execute en parallèle avec le code utilisateur
+- ...
+
+---
+
+## Resources
+
+- [Crafting Interpreters](https://craftinginterpreters.com/)
+- [Compilers: Principles, Techniques, and Tools](https://en.wikipedia.org/wiki/Compilers:_Principles,_Techniques,_and_Tools)
+- [CLR via C#](https://www.microsoftpressstore.com/store/clr-via-c-sharp-9780735667457)
+
+https://openfeedback.io/dd2024/2024-11-07/749439
+
+<img src="feedback_gc.png" alt="Retour" width="200" />
+
+
+    </textarea>
+    <script src="remark-latest.min.js"></script>
+    <script>
+      var slideshow = remark.create({highlightLines: true});
+    </script>
+  </body>
+</html>

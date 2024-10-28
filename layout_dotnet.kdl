@@ -1,0 +1,21 @@
+layout {
+    pane size=1 borderless=true {
+        plugin location="tab-bar"
+    }
+    pane split_direction="horizontal" {
+      pane size="70%" {
+        cwd "/tmp/csharp_demo/"
+        command "nvim"
+        args "Program.cs"
+      }
+      pane size="30%" {
+        cwd "/tmp/csharp_demo/"
+        command "dotnet"
+        args "watch" "run" "--quiet"
+      }
+
+    }
+    pane size=2 borderless=true {
+        plugin location="status-bar"
+    }
+}
